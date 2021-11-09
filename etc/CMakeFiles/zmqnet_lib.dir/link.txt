@@ -1,0 +1,2 @@
+/usr/bin/ar qc libzmqnet_lib.a CMakeFiles/zmqnet_lib.dir/server.cpp.o
+/usr/bin/ranlib libzmqnet_lib.a
