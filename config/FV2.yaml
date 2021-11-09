@@ -1,0 +1,9 @@
+tcp_ip:
+    sub_port: "5555"
+    req_port: "4444"
+    zipcode: "00002"
+
+udp_ip:
+    port: "8080"
+    send_group: "FV3"
+    recv_group: "FV2"

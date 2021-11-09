@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <!-- ROS parameter files -->
+  <arg name="ros_param_file"             default="$(find zmq_network)/config/config.yaml"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="zmq_network_client" file="$(arg ros_param_file)"/>
+
+  <!-- Start Scale Truck Control -->
+  <node pkg="zmq_network" type="zmq_network_client" name="zmq_network_client" output="screen" />
+
+</launch>
