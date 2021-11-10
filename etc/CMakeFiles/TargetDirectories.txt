@@ -1,4 +1,5 @@
 /home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/zmqnet_lib.dir
-/home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/zmqnet.dir
+/home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/server.dir
+/home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/client.dir
 /home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/edit_cache.dir
 /home/avees/catkin_ws/src/zmq_network/etc/CMakeFiles/rebuild_cache.dir

@@ -1,6 +1,6 @@
 #include "zmq_class/zmq_class.h"
 
-ZMQ_NET::ZMQ_NET(ros::NodeHandle nh)
+ZMQ_CLASS::ZMQ_CLASS(ros::NodeHandle nh)
   :nodeHandle_(nh), context_(1)
 {
   if(!readParameters())
@@ -13,7 +13,7 @@ ZMQ_NET::ZMQ_NET(ros::NodeHandle nh)
   spin();
 }
 
-ZMQ_NET::~ZMQ_NET()
+ZMQ_CLASS::~ZMQ_CLASS()
 {
   std::cout << "Disconnected" << std::endl;
   controlDone_ = true;
@@ -24,37 +24,46 @@ ZMQ_NET::~ZMQ_NET()
   context_.close();
 }
 
-void ZMQ_NET::init()
+void ZMQ_CLASS::init()
 {
   controlDone_ = false;
 
-  /* Initialize Socket */
+  /* Initialize Subscribe Socket */
   sub_socket_ = zmq::socket_t(context_, ZMQ_SUB);
   sub_socket_.connect(tcpsub_ip_);
   const char *filter = zipcode_.c_str();
   sub_socket_.setsockopt(ZMQ_SUBSCRIBE, filter, strlen(filter)); 
 
+  /* Initialize Request Socket */
   req_socket_ = zmq::socket_t(context_, ZMQ_REQ); 
   req_socket_.connect(tcpreq_ip_);
   //req_socket_.setsockopt(ZMQ_REQ_CORRELATE, 1); 
 
-  printf("TEXT");
-  std::cout << "DEBUG";
-  std::cout << "DEBUG";
+  /* Initialize Udp send(Radio) Socket */
   udpsend_socket_ = zmq::socket_t(context_, ZMQ_RADIO);
   udpsend_socket_.connect(udp_ip_);
 
+  /* Initialize Udp recv(Dish) Socket */
   udprecv_socket_ = zmq::socket_t(context_, ZMQ_DISH);
   udprecv_socket_.bind(udp_ip_);
   udprecv_socket_.join(udprecv_group_.c_str());
 
-  subThread_ = std::thread(&ZMQ_NET::subscribeZMQ, this);
-  reqThread_ = std::thread(&ZMQ_NET::requestZMQ, this);
-  udpsendThread_ = std::thread(&ZMQ_NET::udpsendZMQ, this);
-  udprecvThread_ = std::thread(&ZMQ_NET::udprecvZMQ, this);
+  /* Initialize Threads */
+  if(sub_flag_)
+    subThread_ = std::thread(&ZMQ_CLASS::subscribeZMQ, this);
+  if(req_flag_)
+    reqThread_ = std::thread(&ZMQ_CLASS::requestZMQ, this);
+  if(udpsend_flag_)
+    udpsendThread_ = std::thread(&ZMQ_CLASS::udpsendZMQ, this);
+  if(udprecv_flag_)
+    udprecvThread_ = std::thread(&ZMQ_CLASS::udprecvZMQ, this);
+  if(pub_flag_)
+    pubThread_;
+  if(rep_flag_)
+    repThread;
 }
 
-bool ZMQ_NET::readParameters()
+bool ZMQ_CLASS::readParameters()
 {
   std::string tcp_ip, tcpsub_port, tcpreq_port;
   std::string udp_ip, udp_port;
@@ -69,6 +78,13 @@ bool ZMQ_NET::readParameters()
   nodeHandle_.param("udp_ip/port",udp_port,std::string("9090"));
   nodeHandle_.param("udp_ip/send_group",udpsend_group_,std::string("FV1"));
   nodeHandle_.param("udp_ip/recv_group",udprecv_group_,std::string("LV"));
+  
+  nodeHandle_.param("socket/udpsend_flag",udpsend_flag_,true);
+  nodeHandle_.param("socket/udprecv_flag",udprecv_flag_,true);
+  nodeHandle_.param("socket/req_flag",req_flag_,true);
+  nodeHandle_.param("socket/rep_flag",rep_flag_,false);
+  nodeHandle_.param("socket/sub_flag",sub_flag_,true);
+  nodeHandle_.param("socket/pub_flag",pub_flag_,false);
 
   tcpsub_ip_ = tcp_ip;
   tcpsub_ip_.append(":");
@@ -83,7 +99,7 @@ bool ZMQ_NET::readParameters()
   return true;
 }
 
-void* ZMQ_NET::subscribeZMQ()
+void* ZMQ_CLASS::subscribeZMQ()
 {
   while(sub_socket_.connected() && !controlDone_)
   {
@@ -94,7 +110,7 @@ void* ZMQ_NET::subscribeZMQ()
     recv_sub_ = static_cast<char*>(update.data());
   }
 }
-void* ZMQ_NET::requestZMQ()
+void* ZMQ_CLASS::requestZMQ()
 { 
   int send_data = 0;
 
@@ -110,9 +126,11 @@ void* ZMQ_NET::requestZMQ()
     bool rc = req_socket_.recv(&reply, 0);
 
     recv_req_ = static_cast<char*>(reply.data());
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
-void* ZMQ_NET::udpsendZMQ()
+void* ZMQ_CLASS::udpsendZMQ()
 {
   while(udpsend_socket_.connected() && !controlDone_)
   {
@@ -124,7 +142,7 @@ void* ZMQ_NET::udpsendZMQ()
     udpsend_socket_.send(request, 0);
   }
 }
-void* ZMQ_NET::udprecvZMQ()
+void* ZMQ_CLASS::udprecvZMQ()
 {
   while(udprecv_socket_.connected() && !controlDone_)
   {
@@ -136,7 +154,7 @@ void* ZMQ_NET::udprecvZMQ()
   }
 }
 
-void ZMQ_NET::spin()
+void ZMQ_CLASS::spin()
 {
   int cnt = 0;
   static int zipcode, recv_sub, send_req, recv_req, send_rad, recv_dsh;

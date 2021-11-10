@@ -20,8 +20,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/local/share/cmake-3.22/Modules/CMakeSystemSpecificInformation.cmake"
   "/usr/local/share/cmake-3.22/Modules/CMakeSystemSpecificInitialize.cmake"
   "/usr/local/share/cmake-3.22/Modules/CheckCSourceCompiles.cmake"
-  "/usr/local/share/cmake-3.22/Modules/CheckFunctionExists.c"
-  "/usr/local/share/cmake-3.22/Modules/CheckIncludeFile.c.in"
   "/usr/local/share/cmake-3.22/Modules/CheckIncludeFile.cmake"
   "/usr/local/share/cmake-3.22/Modules/CheckLibraryExists.cmake"
   "/usr/local/share/cmake-3.22/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
@@ -54,5 +52,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/zmqnet_lib.dir/DependInfo.cmake"
-  "CMakeFiles/zmqnet.dir/DependInfo.cmake"
+  "CMakeFiles/server.dir/DependInfo.cmake"
+  "CMakeFiles/client.dir/DependInfo.cmake"
   )

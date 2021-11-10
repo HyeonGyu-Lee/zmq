@@ -1,0 +1,5 @@
+tcp_ip:
+    ip_addr: "tcp://*"
+
+udp_ip:
+    ip_addr: "udp://239.255.255.250"

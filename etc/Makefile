@@ -130,17 +130,54 @@ zmqnet_lib/fast:
 .PHONY : zmqnet_lib/fast
 
 #=============================================================================
-# Target rules for targets named zmqnet
+# Target rules for targets named server
 
 # Build rule for target.
-zmqnet: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 zmqnet
-.PHONY : zmqnet
+server: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 server
+.PHONY : server
 
 # fast build rule for target.
-zmqnet/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet.dir/build.make CMakeFiles/zmqnet.dir/build
-.PHONY : zmqnet/fast
+server/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
+.PHONY : server/fast
+
+#=============================================================================
+# Target rules for targets named client
+
+# Build rule for target.
+client: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 client
+.PHONY : client
+
+# fast build rule for target.
+client/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
+.PHONY : client/fast
+
+client.o: client.cpp.o
+.PHONY : client.o
+
+# target to build an object file
+client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/client.cpp.o
+.PHONY : client.cpp.o
+
+client.i: client.cpp.i
+.PHONY : client.i
+
+# target to preprocess a source file
+client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/client.cpp.i
+.PHONY : client.cpp.i
+
+client.s: client.cpp.s
+.PHONY : client.s
+
+# target to generate assembly for a file
+client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/client.cpp.s
+.PHONY : client.cpp.s
 
 server.o: server.cpp.o
 .PHONY : server.o
@@ -148,7 +185,7 @@ server.o: server.cpp.o
 # target to build an object file
 server.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet_lib.dir/build.make CMakeFiles/zmqnet_lib.dir/server.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet.dir/build.make CMakeFiles/zmqnet.dir/server.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.o
 .PHONY : server.cpp.o
 
 server.i: server.cpp.i
@@ -157,7 +194,7 @@ server.i: server.cpp.i
 # target to preprocess a source file
 server.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet_lib.dir/build.make CMakeFiles/zmqnet_lib.dir/server.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet.dir/build.make CMakeFiles/zmqnet.dir/server.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.i
 .PHONY : server.cpp.i
 
 server.s: server.cpp.s
@@ -166,7 +203,7 @@ server.s: server.cpp.s
 # target to generate assembly for a file
 server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet_lib.dir/build.make CMakeFiles/zmqnet_lib.dir/server.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/zmqnet.dir/build.make CMakeFiles/zmqnet.dir/server.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.s
 .PHONY : server.cpp.s
 
 # Help Target
@@ -177,8 +214,12 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... zmqnet"
+	@echo "... client"
+	@echo "... server"
 	@echo "... zmqnet_lib"
+	@echo "... client.o"
+	@echo "... client.i"
+	@echo "... client.s"
 	@echo "... server.o"
 	@echo "... server.i"
 	@echo "... server.s"

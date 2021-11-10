@@ -77,12 +77,8 @@ add_library(${PROJECT_NAME}_lib
   ${PROJECT_LIB_FILES}
 )
 
-add_executable(${PROJECT_NAME}_client
-  nodes/client.cpp
-)
-
-add_executable(${PROJECT_NAME}_server
-  nodes/server.cpp
+add_executable(${PROJECT_NAME}
+  nodes/node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_lib
@@ -93,20 +89,11 @@ target_link_libraries(${PROJECT_NAME}_lib
   ${ZeroMQ_LIBRARIES}
 )
 
-target_link_libraries(${PROJECT_NAME}_server
+target_link_libraries(${PROJECT_NAME}
   ${PROJECT_NAME}_lib
 )
 
-target_link_libraries(${PROJECT_NAME}_client
-  ${PROJECT_NAME}_lib
-)
-
-add_dependencies(${PROJECT_NAME}_server
-  ${catkin_EXPORTED_TARGETS}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(${PROJECT_NAME}_client
+add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )

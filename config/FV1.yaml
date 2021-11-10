@@ -7,3 +7,11 @@ udp_ip:
     port: "8080"
     send_group: "FV2"
     recv_group: "FV1"
+
+socket:
+    udpsend_flag: true
+    udpsend_flag: true
+    req_flag: true
+    rep_falg: false
+    sub_flag: true
+    pub_flag: false

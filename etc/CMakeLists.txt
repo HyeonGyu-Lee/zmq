@@ -38,8 +38,12 @@ add_library(${PROJECT_NAME}_lib
   ${PROJECT_LIB_FILES}
 )
 
-add_executable(${PROJECT_NAME}
+add_executable(server
   server.cpp
+)
+
+add_executable(client
+  client.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_lib
@@ -49,10 +53,18 @@ target_link_libraries(${PROJECT_NAME}_lib
   ${ZeroMQ_LIBRARIES}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(server
   ${PROJECT_NAME}_lib
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(server
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
+target_link_libraries(client
+  ${PROJECT_NAME}_lib
+)
+
+target_link_libraries(client
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
