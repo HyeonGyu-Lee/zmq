@@ -1,4 +1,4 @@
-># 1. ZeroMQ (zmqpp)
+># 1. ZeroMQ (cppzmq)
 >## 1.1 Install and Build of ZeroMQ for cpp
 >~~~
 >sudo apt update
