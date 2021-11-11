@@ -10,6 +10,6 @@
   <rosparam command="load" ns="zmq_network_LV" file="$(arg zmq_param_file)"/>
 
   <!-- Start Scale Truck Control -->
-  <node pkg="zmq_network" type="zmq_network_client" name="zmq_network_LV" output="screen" />
+  <node pkg="zmq_network" type="zmq_network" name="zmq_network_LV" output="screen" />
 
 </launch>
