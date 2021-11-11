@@ -3,8 +3,8 @@
 >~~~
 >sudo apt update
 >sudo apt upgrade
->sudo apt purge libzmq3-dev
->sudo apt purge cmake
+>sudo apt remove libzmq3-dev
+>sudo apt remove cmake
 >~~~
 >http://github.com/zeromq/cppzmq
 >~~~
@@ -41,7 +41,7 @@
 >cd build && cmake .. -DENABLE_DRAFTS=ON
 >sudo make -j8 install
 >sudo ldconfig
->cd ../
+>cd ../../
 ># Now install CPPZMQ
 >wget https://github.com/zeromq/cppzmq/archive/master.zip
 >unzip master.zip
