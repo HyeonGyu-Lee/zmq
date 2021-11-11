@@ -5,7 +5,7 @@
 >sudo apt upgrade
 >sudo apt install libzmq3-dev
 >~~~
->http://github.com/zeromq/zmqpp
+>http://github.com/zeromq/cppzmq
 >~~~
 >git clone git://github.com/jedisct1/libsodium.git
 >cd libsodium
@@ -22,9 +22,9 @@
 >sudo make install
 >sudo ldconfig
 >cd ../
-># Now install ZMQPP
->git clone git://github.com/zeromq/zmqpp.git
->cd zmqpp
+># Now install CPPZMQ
+>git clone git://github.com/zeromq/cppzmq.git
+>cd cppzmq
 >make
 >make check
 >sudo make install
