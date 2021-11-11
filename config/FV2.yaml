@@ -1,6 +1,8 @@
 tcp_ip:
     sub_port: "5555"
+    pub_port: "5555"
     req_port: "4444"
+    rep_port: "4444"
     zipcode: "00002"
 
 udp_ip:
@@ -8,4 +10,10 @@ udp_ip:
     send_group: "FV3"
     recv_group: "FV2"
 
-
+socket:
+    rad_flag: true
+    dsh_flag: true
+    req_flag: true
+    rep_falg: false
+    sub_flag: true
+    pub_flag: false

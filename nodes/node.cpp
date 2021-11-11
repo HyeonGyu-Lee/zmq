@@ -1,4 +1,4 @@
-#include "zmq_class/zmq_class.h"
+#include "zmq_net/zmq_net.h"
 #include <ros/ros.h>
 
 int main(int argc, char** argv)

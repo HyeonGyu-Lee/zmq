@@ -71,6 +71,7 @@ include_directories(
 
 set(PROJECT_LIB_FILES
   src/zmq_class.cpp
+  src/zmq_net.cpp
 )
 
 add_library(${PROJECT_NAME}_lib

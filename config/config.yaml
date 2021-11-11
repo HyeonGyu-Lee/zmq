@@ -1,5 +1,6 @@
 tcp_ip:
     ip_addr: "tcp://192.168.85.128"
+    interface_name: "ens33"
 
 udp_ip:
     ip_addr: "udp://239.255.255.250"

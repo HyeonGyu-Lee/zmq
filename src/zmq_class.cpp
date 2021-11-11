@@ -9,18 +9,19 @@ ZMQ_CLASS::ZMQ_CLASS(ros::NodeHandle nh)
   }
 
   init();
-
-  spin();
 }
 
 ZMQ_CLASS::~ZMQ_CLASS()
 {
   std::cout << "Disconnected" << std::endl;
   controlDone_ = true;
+  ros::requestShutdown();
   sub_socket_.close();
+  pub_socket_.close();
   req_socket_.close();
-  udpsend_socket_.close();
-  udprecv_socket_.close();
+  rep_socket_.close();
+  rad_socket_.close();
+  dsh_socket_.close();
   context_.close();
 }
 
@@ -29,69 +30,120 @@ void ZMQ_CLASS::init()
   controlDone_ = false;
 
   /* Initialize Subscribe Socket */
-  sub_socket_ = zmq::socket_t(context_, ZMQ_SUB);
-  sub_socket_.connect(tcpsub_ip_);
-  const char *filter = zipcode_.c_str();
-  sub_socket_.setsockopt(ZMQ_SUBSCRIBE, filter, strlen(filter)); 
+  if(sub_flag_)
+  {
+    sub_socket_ = zmq::socket_t(context_, ZMQ_SUB);
+    sub_socket_.connect(tcpsub_ip_);
+    const char *filter = zipcode_.c_str();
+    sub_socket_.setsockopt(ZMQ_SUBSCRIBE, filter, strlen(filter)); 
+  }
+
+  if(pub_flag_)
+  {
+    pub_socket_ = zmq::socket_t(context_, ZMQ_PUB);
+    pub_socket_.connect(tcppub_ip_);
+  }
 
   /* Initialize Request Socket */
-  req_socket_ = zmq::socket_t(context_, ZMQ_REQ); 
-  req_socket_.connect(tcpreq_ip_);
-  //req_socket_.setsockopt(ZMQ_REQ_CORRELATE, 1); 
+  if(req_flag_) {
+    req_socket_ = zmq::socket_t(context_, ZMQ_REQ); 
+    req_socket_.connect(tcpreq_ip_);
+    //req_socket_.setsockopt(ZMQ_REQ_CORRELATE, 1); 
+  }
 
   /* Initialize Udp send(Radio) Socket */
-  udpsend_socket_ = zmq::socket_t(context_, ZMQ_RADIO);
-  udpsend_socket_.connect(udp_ip_);
+  if(rad_flag_)
+  {
+    rad_socket_ = zmq::socket_t(context_, ZMQ_RADIO);
+    rad_socket_.connect(udp_ip_);
+  }
 
   /* Initialize Udp recv(Dish) Socket */
-  udprecv_socket_ = zmq::socket_t(context_, ZMQ_DISH);
-  udprecv_socket_.bind(udp_ip_);
-  udprecv_socket_.join(udprecv_group_.c_str());
+  if(dsh_flag_)
+  {
+    dsh_socket_ = zmq::socket_t(context_, ZMQ_DISH);
+    dsh_socket_.bind(udp_ip_);
+    dsh_socket_.join(dsh_group_.c_str());
+  }
 
   /* Initialize Threads */
   if(sub_flag_)
     subThread_ = std::thread(&ZMQ_CLASS::subscribeZMQ, this);
+  if(pub_flag_)
+    pubThread_ = std::thread(&ZMQ_CLASS::publishZMQ, this);
   if(req_flag_)
     reqThread_ = std::thread(&ZMQ_CLASS::requestZMQ, this);
-  if(udpsend_flag_)
-    udpsendThread_ = std::thread(&ZMQ_CLASS::udpsendZMQ, this);
-  if(udprecv_flag_)
-    udprecvThread_ = std::thread(&ZMQ_CLASS::udprecvZMQ, this);
-  if(pub_flag_)
-    pubThread_;
   if(rep_flag_)
-    repThread;
+    repThread_ = std::thread(&ZMQ_CLASS::replyZMQ, this);
+  if(rad_flag_)
+    radThread_ = std::thread(&ZMQ_CLASS::radioZMQ, this);
+  if(dsh_flag_)
+    dshThread_ = std::thread(&ZMQ_CLASS::dishZMQ, this);
+}
+
+std::string ZMQ_CLASS::getIPAddress(){
+  std::string ipAddress="Unable to get IP Address";
+  struct ifaddrs *interfaces = NULL;
+  struct ifaddrs *temp_addr = NULL;
+  int success = 0;
+  success = getifaddrs(&interfaces);
+  if (success == 0)
+  {
+    temp_addr = interfaces;
+    while(temp_addr != NULL)
+    {
+      if(temp_addr->ifa_addr->sa_family == AF_INET)
+      {
+        if(strcmp(temp_addr->ifa_name, interface_name_.c_str())==0)
+	{
+          ipAddress = inet_ntoa(((struct sockaddr_in*)temp_addr->ifa_addr)->sin_addr);
+	}
+      }
+      temp_addr = temp_addr->ifa_next;
+    }
+    freeifaddrs(interfaces);
+    return ipAddress;
+  }
 }
 
 bool ZMQ_CLASS::readParameters()
 {
-  std::string tcp_ip, tcpsub_port, tcpreq_port;
+  std::string tcp_ip, tcpsub_port, tcppub_port, tcpreq_port, tcprep_port;
   std::string udp_ip, udp_port;
+  nodeHandle_.param("tcp_ip/interface_name",interface_name_,std::string("ens33"));
 
   nodeHandle_.param("tcp_ip/ip_addr",tcp_ip,std::string("tcp://192.168.85.128"));
   nodeHandle_.param("tcp_ip/sub_port",tcpsub_port,std::string("5555"));
+  nodeHandle_.param("tcp_ip/pub_port",tcpsub_port,std::string("5555"));
   nodeHandle_.param("tcp_ip/req_port",tcpreq_port,std::string("4444"));
+  nodeHandle_.param("tcp_ip/rep_port",tcpreq_port,std::string("4444"));
 
   nodeHandle_.param("tcp_ip/zipcode",zipcode_,std::string("00001"));
 
   nodeHandle_.param("udp_ip/ip_addr",udp_ip,std::string("udp://127.0.0.1"));
   nodeHandle_.param("udp_ip/port",udp_port,std::string("9090"));
-  nodeHandle_.param("udp_ip/send_group",udpsend_group_,std::string("FV1"));
-  nodeHandle_.param("udp_ip/recv_group",udprecv_group_,std::string("LV"));
+  nodeHandle_.param("udp_ip/send_group",rad_group_,std::string("FV1"));
+  nodeHandle_.param("udp_ip/recv_group",dsh_group_,std::string("LV"));
   
-  nodeHandle_.param("socket/udpsend_flag",udpsend_flag_,true);
-  nodeHandle_.param("socket/udprecv_flag",udprecv_flag_,true);
+  nodeHandle_.param("socket/rad_flag",rad_flag_,true);
+  nodeHandle_.param("socket/dsh_flag",dsh_flag_,true);
   nodeHandle_.param("socket/req_flag",req_flag_,true);
   nodeHandle_.param("socket/rep_flag",rep_flag_,false);
   nodeHandle_.param("socket/sub_flag",sub_flag_,true);
   nodeHandle_.param("socket/pub_flag",pub_flag_,false);
 
+  tcppub_ip_ = tcp_ip;
+  tcppub_ip_.append(":");
+  tcppub_ip_.append(tcppub_port);
   tcpsub_ip_ = tcp_ip;
   tcpsub_ip_.append(":");
   tcpsub_ip_.append(tcpsub_port);
   tcpreq_ip_ = tcp_ip;
   tcpreq_ip_.append(":");
   tcpreq_ip_.append(tcpreq_port);
+  tcprep_ip_ = tcp_ip;
+  tcprep_ip_.append(":");
+  tcprep_ip_.append(tcprep_port);
   udp_ip_ = udp_ip;
   udp_ip_.append(":");
   udp_ip_.append(udp_port);
@@ -130,72 +182,43 @@ void* ZMQ_CLASS::requestZMQ()
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
-void* ZMQ_CLASS::udpsendZMQ()
+void* ZMQ_CLASS::radioZMQ()
 {
-  while(udpsend_socket_.connected() && !controlDone_)
+  while(rad_socket_.connected() && !controlDone_)
   {
     zmq::message_t request(20);
-    request.set_group(udpsend_group_.c_str());
+    request.set_group(rad_group_.c_str());
 
     snprintf((char *) request.data(), 20, "%s", send_rad_.c_str());
 
-    udpsend_socket_.send(request, 0);
+    rad_socket_.send(request, 0);
   }
 }
-void* ZMQ_CLASS::udprecvZMQ()
+void* ZMQ_CLASS::dishZMQ()
 {
-  while(udprecv_socket_.connected() && !controlDone_)
+  while(dsh_socket_.connected() && !controlDone_)
   {
     zmq::message_t reply;
 
-    bool rc = udprecv_socket_.recv(&reply, 0);
+    bool rc = dsh_socket_.recv(&reply, 0);
 
     recv_dsh_ = static_cast<char*>(reply.data());
   }
 }
 
-void ZMQ_CLASS::spin()
+void* ZMQ_CLASS::publishZMQ()
 {
-  int cnt = 0;
-  static int zipcode, recv_sub, send_req, recv_req, send_rad, recv_dsh;
-  std::istringstream iss;
-
-  int send_rad_data = 100;
-  int send_req_data = 0;
-  while(ros::ok && !controlDone_)
+  while(pub_socket_.connected() && !controlDone_)
   {
-    iss = std::istringstream(recv_sub_);
-    iss >> zipcode >> recv_sub;
-
-    send_req_ = boost::str(boost::format("%s %d") % zipcode_.c_str() % send_req_data++);
-    iss = std::istringstream(send_req_);
-    iss >> zipcode >> send_req;
-
-    iss = std::istringstream(recv_req_);
-    iss >> zipcode >> recv_req;
-
-    send_rad_ = boost::str(boost::format("%s %d") % zipcode_.c_str() % send_rad_data++);
-    iss = std::istringstream(send_rad_);
-    iss >> zipcode >> send_rad;
-
-    iss = std::istringstream(recv_dsh_);
-    iss >> zipcode >> recv_dsh;
-
-    printf("\033[2J");
-    printf("\033[1;1H");
-    printf("%s %d %s\n","- client",cnt++,udp_ip_.c_str());
-    printf("%s %s %s %s\n"," udpsend:",udpsend_group_.c_str(),"| udprecv:",udprecv_group_.c_str());
-    printf("%15s %s\n","zipcode :", zipcode_.c_str());
-    printf("%15s %5d\n","sub recv data :", recv_sub);
-    printf("%15s %5d\n","req send data :", send_req);
-    printf("%15s %5d\n","req recv data :", recv_req);
-    printf("%15s %5d\n","rad send data :", send_rad);
-    printf("%15s %5d\n","dsh recv data :", recv_dsh);
-
-    if(ros::isShuttingDown())
-    {
-      controlDone_ = true;
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    zmq::message_t publish;
   }
 }
+
+void* ZMQ_CLASS::replyZMQ()
+{
+  while(rep_socket_.connected() && !controlDone_)
+  {
+    zmq::message_t reply;
+  }
+}
+
