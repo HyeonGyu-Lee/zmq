@@ -3,12 +3,12 @@
 >~~~
 >sudo apt update
 >sudo apt upgrade
->sudo apt remove libzmq3-dev
+>sudo apt purge libzmq3-dev
+>sudo apt purge cmake
 >~~~
 >http://github.com/zeromq/cppzmq
 >~~~
 ># Upgrade cmake (CMake 3.10 or higher is required)
->sudo apt purge cmake
 >wget https://github.com/Kitware/CMake/archive/master.zip
 >unzip master.zip
 >rm master.zip
