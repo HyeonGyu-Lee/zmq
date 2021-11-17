@@ -160,6 +160,7 @@ void* ZMQ_CLASS::subscribeZMQ()
     sub_socket_.recv(&update, 0);
 
     recv_sub_ = static_cast<char*>(update.data());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 void* ZMQ_CLASS::requestZMQ()
@@ -179,7 +180,7 @@ void* ZMQ_CLASS::requestZMQ()
 
     recv_req_ = static_cast<char*>(reply.data());
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 void* ZMQ_CLASS::radioZMQ()
@@ -192,6 +193,7 @@ void* ZMQ_CLASS::radioZMQ()
     snprintf((char *) request.data(), 20, "%s", send_rad_.c_str());
 
     rad_socket_.send(request, 0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 void* ZMQ_CLASS::dishZMQ()
@@ -203,6 +205,7 @@ void* ZMQ_CLASS::dishZMQ()
     bool rc = dsh_socket_.recv(&reply, 0);
 
     recv_dsh_ = static_cast<char*>(reply.data());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
@@ -211,6 +214,7 @@ void* ZMQ_CLASS::publishZMQ()
   while(pub_socket_.connected() && !controlDone_)
   {
     zmq::message_t publish;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
@@ -219,6 +223,7 @@ void* ZMQ_CLASS::replyZMQ()
   while(rep_socket_.connected() && !controlDone_)
   {
     zmq::message_t reply;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
